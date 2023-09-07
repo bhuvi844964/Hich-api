@@ -7,6 +7,9 @@ const qrCodeSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    numberOfQr: {
+      type: Number,
+    },
     qrData: {
       type: String,
       required: true,

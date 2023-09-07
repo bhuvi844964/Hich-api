@@ -6,6 +6,7 @@ import {
   getQRCodeList,
   getQRCodeById,
   deleteQRCode,
+  getQRCodeListAll
 } from "../controllers/qrCodeController.js";
 import {
   authenticateToken,
@@ -19,6 +20,9 @@ router.post("/", authenticateToken, authorizeRole("admin"), createQRCode);
 
 // Get all QR codes
 router.get("/", authenticateToken, getQRCodeList);
+
+// Get all QR codes
+router.get("/getQRCodeListAll", authenticateToken, getQRCodeListAll);
 
 // Get a QR code by ID
 router.get("/:qrcodeId", authenticateToken, getQRCodeById);

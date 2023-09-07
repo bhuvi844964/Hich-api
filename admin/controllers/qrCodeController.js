@@ -3,27 +3,35 @@ import { generateQRCode } from "../../utils/qrCodeGenerator.js";
 import crypto from "crypto";
 import { paginationOptions } from "../../utils/paginationOptions.js";
 
+
 export const createQRCode = async (req, res) => {
   try {
-    const { points } = req.body;
-    const unique_id = crypto.randomBytes(10).toString("hex");
-    // Generate QR code logic
-    const qrData = await generateQRCode({ points, unique_id }); // Assuming you have a separate utility function to generate the QR code
+    const { points, numberOfQr = 1 } = req.body;
 
-    const qrCode = new QRCode({
-      points,
-      qrData,
-      unique_id,
-    });
+    if (numberOfQr < 1) {
+      return res.status(400).json({ error: "Invalid numberOfQr value" });
+    }
 
-    await qrCode.save();
+    for (let i = 0; i < numberOfQr; i++) {
+      const unique_id = crypto.randomBytes(10).toString("hex");
+      const qrData = await generateQRCode({ points, unique_id }); 
 
-    res.status(201).json({ message: "QR Code created successfully" });
+      const qrCode = new QRCode({
+        points,
+        qrData,
+        unique_id,
+      });
+
+      await qrCode.save();
+    }
+
+    res.status(201).json({ message: `${numberOfQr} QR Code(s) created successfully` });
   } catch (error) {
-    console.log("Eror::", error.message);
-    res.status(500).json({ error: "Failed to create QR Code" });
+    console.log("Error:", error.message);
+    res.status(500).json({ error: "Failed to create QR Code(s)" });
   }
 };
+
 
 // Delete a QR Code
 export const deleteQRCode = async (req, res) => {
@@ -63,6 +71,21 @@ export const getQRCodeList = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch QR Codes" });
   }
 };
+export const getQRCodeListAll = async (req, res) => {
+  try {
+    const { points } = req.query; 
+    const filter = { deleted: false };
+
+    if (points) {
+      filter.points = parseInt(points); 
+    }
+    const qrCodes = await QRCode.find(filter).sort({ createdAt: -1 }).exec();
+    return res.json({data:qrCodes});
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch QR Codes" });
+  }
+};
+
 
 export const getQRCodeById = async (req, res) => {
   try {
